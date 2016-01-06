@@ -1,0 +1,50 @@
+{
+	"quizzes": [
+		{
+			"title": {
+				"en": "Geography",
+				"ru": "География"
+			},
+			"desc": "",
+			"thumbnail": "path/to/thumbnail.jpg",
+			"questions": [
+				{
+					"target": "5d3c5c",
+					"level": 0,
+					"desc": "Some brief description of current question",
+					"options": [
+						{
+							"id": "1d3a5c",
+							"value": {
+								"en": "Sweden",
+								"ru": "Швеция"
+							}
+						},
+						{
+							"id": "5d3c5c",
+							"value": {
+								"en": "Switzerland",
+								"ru": "Швейцария"
+							}
+						},
+						{
+							"id": "2a7e5f",
+							"value": {
+								"en": "Danish",
+								"ru": "Дания"
+							}
+						},
+						{
+							"id": "91be5a",
+							"value": {
+								"en": "Norwegian",
+								"ru": "Норвегия"
+							}
+						}
+
+					]
+				}
+			]
+		}
+	]
+}
