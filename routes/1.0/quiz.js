@@ -86,32 +86,34 @@ module.exports = function( router, config ){
 
 
   router.put( '/1.0/quizzes/:id', ( req, res ) => {
-
+    //todo: implement
   });
 
 
 
   router.delete( '/1.0/quizzes/:id', ( req, res ) => {
-
+    Quiz.findByIdAndRemove( req.params.id, ( err, quiz ) => {
+      res.status(quiz ? 204 : 404).end();
+    })
   });
 
 
 
   router.post( '/1.0/quizzes/:id/questions', ( req, res ) => {
-
+    //todo: implement
   });
 
 
 
   router.put( '/1.0/quizzes/:quiz_id/questions/:question_id', ( req, res ) => {
-
+    //todo: implement
   });
 
 
 
 
   router.delete( '/1.0/quizzes/:quiz_id/questions/:question_id', ( req, res ) => {
-
+    //todo: implement
   });
 
 };

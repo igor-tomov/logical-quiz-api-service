@@ -33,6 +33,9 @@ describe( "Quizzes CRUD operation", function(){
           "thumbnail": "path/to/thumbnail.jpg",
           "questions": []
         };
+
+        // stored id of quiz which will be created during the test suite execution
+        this.createdQuizId = null;
     });
 
 
@@ -77,6 +80,7 @@ describe( "Quizzes CRUD operation", function(){
             })
             .end( (err, res) => {
               if (err) return done(err);
+              this.createdQuizId = res.body.id;
               done();
             });
     });
@@ -210,6 +214,31 @@ describe( "Quizzes CRUD operation", function(){
             })
             .end( (err, res) => {
               if (err) return done(err);
+              done();
+            });
+    });
+
+
+
+    it( "Delete existing quiz entity", function(done){
+      request( endpoint )
+            .del('/1.0/quizzes/' + this.createdQuizId )
+            .expect(204)
+            .end( (err, res) => {
+              if (err) return done(err);
+              done();
+            });
+    });
+
+
+
+    it( "Try to delete non-existand quiz entity and receive 404", function(done){
+      request( endpoint )
+            .del('/1.0/quizzes/' + this.createdQuizId )
+            .expect(404)
+            .end( (err, res) => {
+              if (err) return done(err);
+              this.createdQuizId = null;
               done();
             });
     });
