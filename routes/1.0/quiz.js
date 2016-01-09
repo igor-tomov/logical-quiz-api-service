@@ -9,8 +9,15 @@ var quizSchema = {
   properties: {
     title: {
       oneOf: [
-        { type: 'string' },
-        { type: 'object' }
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
       ]
     },
     desc: {
@@ -23,9 +30,10 @@ var quizSchema = {
 };
 
 
+
 module.exports = function( router, config ){
 
-  router.get( '/api/1.0/quizzes/', ( req, res ) => {
+  router.get( '/1.0/quizzes/', ( req, res ) => {
     res.end('OK');
   });
 
@@ -34,48 +42,62 @@ module.exports = function( router, config ){
 
   /********************* write operations ********************/
 
-  router.post( '/api/1.0/quizzes/reset', ( req, res ) => {
-    Quiz.findOneAndRemove( {}, err => {
+  router.post( '/1.0/quizzes/reset', ( req, res ) => {
+    Quiz.remove({}, err => {
       if ( err ) throw err;
       logger.warn( "Quiz data has been reset" );
-      res.status(200).end();
+      res.status(204).end();
     });
   });
 
 
 
-  router.post( '/api/1.0/quizzes', ( req, res ) => {
+  router.post( '/1.0/quizzes', ( req, res ) => {
+    var body = req.body;
+    var result = tv4.validateMultiple( body, quizSchema );
+
+    if ( ! result.valid ){
+      logger.debug( result.errors );
+      res.status( 400 ).end( result.missing );
+      return;
+    }
+
+    var quiz = new Quiz( body );
+
+    quiz.save( err => {
+      if ( err ) throw err;
+      res.status( 201 ).json( quiz.toClient() );
+    });
+  });
+
+
+
+  router.put( '/1.0/quizzes/:id', ( req, res ) => {
 
   });
 
 
 
-  router.put( '/api/1.0/quizzes/:id', ( req, res ) => {
+  router.delete( '/1.0/quizzes/:id', ( req, res ) => {
 
   });
 
 
 
-  router.delete( '/api/1.0/quizzes/:id', ( req, res ) => {
+  router.post( '/1.0/quizzes/:id/questions', ( req, res ) => {
 
   });
 
 
 
-  router.post( '/api/1.0/quizzes/:id/questions', ( req, res ) => {
-
-  });
-
-
-
-  router.put( '/api/1.0/quizzes/:quiz_id/questions/:question_id', ( req, res ) => {
+  router.put( '/1.0/quizzes/:quiz_id/questions/:question_id', ( req, res ) => {
 
   });
 
 
 
 
-  router.delete( '/api/1.0/quizzes/:quiz_id/questions/:question_id', ( req, res ) => {
+  router.delete( '/1.0/quizzes/:quiz_id/questions/:question_id', ( req, res ) => {
 
   });
 

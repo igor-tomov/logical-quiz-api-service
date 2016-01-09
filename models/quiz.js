@@ -94,14 +94,14 @@ var QuizSchema = new Schema({
 
 
 QuizSchema.methods.toClient = function( locale ){
-  var object = utils.normalizeId( this.toObject() );
+  var object = utils.normalizeId( this.toObject({ versionKey: false }) );
 
   if ( locale ){
     object = utils.localizeField( object, 'title', locale );
   }
 
   object.questions = this.questions.map( item => item.toClient( locale, true /* todo: make it configurable */ ) );
-
+  
   return object;
 };
 
