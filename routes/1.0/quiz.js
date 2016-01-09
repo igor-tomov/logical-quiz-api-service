@@ -1,9 +1,12 @@
 var logger = require('../../logger');
 var tv4    = require('tv4');
 var Quiz   = require('../../models/quiz').Quiz;
+var utils  = require('../utils');
 
 
-
+/**
+ * JSON schema of Quiz entities
+ */
 var quizSchema = {
   required: ['title'],
   properties: {
@@ -21,7 +24,17 @@ var quizSchema = {
       ]
     },
     desc: {
-      type: 'string'
+      oneOf: [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      ]
     },
     thumbnail: {
       type: 'string'
@@ -58,7 +71,7 @@ module.exports = function( router, config ){
 
     if ( ! result.valid ){
       logger.debug( result.errors );
-      res.status( 400 ).end( result.missing );
+      res.status( 422 ).json( utils.prepareErrorResponse( result.errors ) );
       return;
     }
 

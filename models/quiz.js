@@ -81,7 +81,7 @@ var QuizSchema = new Schema({
   },
 
   desc: {
-    type: String,
+    type: Schema.Types.Mixed,
     default: ''
   },
 
