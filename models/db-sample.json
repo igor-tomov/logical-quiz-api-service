@@ -5,7 +5,10 @@
 				"en": "Geography",
 				"ru": "География"
 			},
-			"desc": "",
+			"desc": {
+				"en": "Try to determine logic link between geographic entities(coutries, cities, rivers, .etc)",
+				"ru": "Попробуйте определить логическую связь между географическими сущностями(страны, города и т.д.)"
+			},
 			"thumbnail": "path/to/thumbnail.jpg",
 			"questions": [
 				{
