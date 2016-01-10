@@ -70,8 +70,9 @@ describe( "Quizzes CRUD operation", function(){
           ]
         };
 
-        // stored id of quiz which will be created during the test suite execution
+        // stored id of entities which will be created during the test suite execution
         this.createdQuizId = null;
+        this.createdQuizQuestionId = null;
 
         // check connection with REST-server
         request( endpoint )
@@ -265,7 +266,7 @@ describe( "Quizzes CRUD operation", function(){
 
 
     /*************** POST Quiz question entity ***************/
-    it( "Post new quiz question entity, pass all options as string", function(done){
+    it( "Post new question entity, pass all options as string", function(done){
       var question = this.testQuiz.questions[0];
 
       request( endpoint )
@@ -286,15 +287,16 @@ describe( "Quizzes CRUD operation", function(){
                 expect( question.options.indexOf( item.value ) ).to.not.equal(-1);
               });
             })
-            .end( err => {
+            .end( (err, res) => {
               if (err) return done(err);
+              this.createdQuizQuestionId = res.body.id;
               done();
             });
     });
 
 
 
-    it( "Post new quiz question entity, pass all options as locale objects and desc as string", function(done){
+    it( "Post new question entity, pass all options as locale objects and desc as string", function(done){
       var question = this.testQuiz.questions[1];
       var options  = question.options.map( item => item.en );
 
@@ -315,6 +317,49 @@ describe( "Quizzes CRUD operation", function(){
                 expect( item ).to.have.all.keys( 'id', 'value' );
                 expect( options.indexOf( item.value ) ).to.not.equal(-1);
               });
+            })
+            .end( (err, res) => {
+              if (err) return done(err);
+              done();
+            });
+    });
+
+
+
+    it( "Post new question entity without params and recieve validation error", function(done){
+      request( endpoint )
+            .post(`/1.0/quizzes/${this.createdQuizId}/questions`)
+            .set('Content-Type', 'application/json')
+            .send()
+            .expect(422)
+            .expect( "Content-Type", /json/ )
+            .expect(function( res ){
+              expect( res.body ).to.have.all.keys( 'error', 'message' );
+              expect( res.body.message ).to.be.an( 'array' );
+            })
+            .end( (err, res) => {
+              if (err) return done(err);
+              done();
+            });
+    });
+
+
+
+    it( "Post new question entity without required params and recieve validation error", function(done){
+      var question = Object.assign( {}, this.testQuiz.questions[1] );
+
+      delete question.target;
+      delete question.options;
+
+      request( endpoint )
+            .post(`/1.0/quizzes/${this.createdQuizId}/questions`)
+            .set('Content-Type', 'application/json')
+            .send( JSON.stringify( question ) )
+            .expect(422)
+            .expect( "Content-Type", /json/ )
+            .expect(function( res ){
+              expect( res.body ).to.have.all.keys( 'error', 'message' );
+              expect( res.body.message ).to.be.an( 'array' );
             })
             .end( (err, res) => {
               if (err) return done(err);
