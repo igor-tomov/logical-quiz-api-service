@@ -1,7 +1,12 @@
 var logger = require('../../logger');
 var tv4    = require('tv4');
-var Quiz   = require('../../models/quiz').Quiz;
+var models = require('../../models/quiz');
 var utils  = require('../utils');
+
+// expose models
+var Quiz     = models.Quiz;
+var Question = models.Question;
+var QuestionOption = models.QuestionOption;
 
 
 /**
@@ -44,6 +49,53 @@ var quizSchema = {
 
 
 
+var quizQuestionSchema = {
+  required: ['target', 'options'],
+  properties: {
+    target: {
+      type: "number",
+      minimum: 1
+    },
+    level: {
+      "type": "number",
+      "minimum": 1
+    },
+    options: {
+      "type": "array",
+      "items": {
+        oneOf: [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "minItems": 4,
+      "uniqueItems": true
+    },
+    desc: {
+      oneOf: [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+  }
+}
+
+
+
 module.exports = function( router, config ){
 
   router.get( '/1.0/quizzes/', ( req, res ) => {
@@ -79,7 +131,7 @@ module.exports = function( router, config ){
 
     quiz.save( err => {
       if ( err ) throw err;
-      res.status( 201 ).json( quiz.toClient() );
+      res.status( 201 ).json( quiz.toClient( req.locale ) );
     });
   });
 
@@ -100,7 +152,27 @@ module.exports = function( router, config ){
 
 
   router.post( '/1.0/quizzes/:id/questions', ( req, res ) => {
-    //todo: implement
+    var body = req.body;
+    var result = tv4.validateMultiple( body, quizQuestionSchema );
+    var options, question;
+
+    if ( ! result.valid ){
+      logger.debug( result.errors );
+      res.status( 422 ).json( utils.prepareErrorResponse( result.errors ) );
+      return;
+    }
+
+    options = body.options.map( item => new QuestionOption({ value: item }) );
+    
+    question = new Question( Object.assign( {}, body, {
+      options: options,
+      target: options[body.target - 1].id
+    }));
+
+    question.save( err => {
+      if ( err ) throw err;
+      res.status( 201 ).json( question.toClient( req.locale ) );
+    });
   });
 
 

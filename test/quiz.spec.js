@@ -19,7 +19,7 @@ var endpoint = process.env.TEST_SERVER || process.argv.reduce( ( res, item, i ) 
 
 describe( "Quizzes CRUD operation", function(){
 
-    before(function(){
+    before(function(done){
         //define test quiz entity
         this.testQuiz = {
           "title": {
@@ -31,11 +31,55 @@ describe( "Quizzes CRUD operation", function(){
             "ru": "Попробуйте определить логическую связь между географическими сущностями(страны, города и т.д.)"
           },
           "thumbnail": "path/to/thumbnail.jpg",
-          "questions": []
+          "questions": [
+            {
+              "target": 1,
+              "options": [
+                "Hungary",
+                "Montenegro",
+                "Serbia",
+                "Croatia"
+              ]
+            },
+            {
+              "target": 2,
+              "level": 2,
+              "desc": {
+                "en": "Which country is not a part of Scandinavia",
+                "ru": "Какая из стран не является частью Скандинавии"
+              },
+              "options": [
+                {
+                  "en": "Sweden",
+                  "ru": "Швеция"
+                },
+                {
+                  "en": "Switzerland",
+                  "ru": "Швейцария"
+                },
+                {
+                  "en": "Danish",
+                  "ru": "Дания"
+                },
+                {
+                  "en": "Norwegian",
+                  "ru": "Норвегия"                  
+                }
+              ]
+            },
+          ]
         };
 
         // stored id of quiz which will be created during the test suite execution
         this.createdQuizId = null;
+
+        // check connection with REST-server
+        request( endpoint )
+              .get("/1.0/quizzes")
+              .end( ( err, res ) => {
+                if ( err ) throw err;
+                done();
+              });
     });
 
 
@@ -57,8 +101,8 @@ describe( "Quizzes CRUD operation", function(){
     });
 
 
-
-    it( "Post new quiz entity, pass title as string only", function(done){
+    /*************** POST Quiz entity ***************/
+    it( "Post new quiz entity, pass title as string", function(done){
       var quiz = {
         title: this.testQuiz.title.en
       };
@@ -80,14 +124,13 @@ describe( "Quizzes CRUD operation", function(){
             })
             .end( (err, res) => {
               if (err) return done(err);
-              this.createdQuizId = res.body.id;
               done();
             });
     });
 
 
 
-    it( "Post new quiz entity, pass title as locale object only", function(done){
+    it( "Post new quiz entity, pass title as locale object", function(done){
       var quiz = {
         title: this.testQuiz.title
       };
@@ -100,90 +143,12 @@ describe( "Quizzes CRUD operation", function(){
             .expect( "Content-Type", /json/ )
             .expect(function( res ){
               expect( res.body ).to.have.all.keys( 'id', 'title', 'desc', 'thumbnail', 'questions');
-              expect( res.body.title ).to.deep.equal( quiz.title );
+              expect( res.body.title ).to.deep.equal( quiz.title.en );
               expect( res.body.desc ).to.be.empty;
               expect( res.body.thumbnail ).to.be.empty;
               expect( res.body.questions )
                 .to.be.an( 'array' )
                 .and.to.be.empty;
-            })
-            .end( (err, res) => {
-              if (err) return done(err);
-              done();
-            });
-    });
-
-
-
-    it( "Post new quiz entity, pass title as locale object, desc as string and thumbnail", function(done){
-      var quiz = {
-        title: this.testQuiz.title,
-        desc: this.testQuiz.desc.en,
-        thumbnail: this.testQuiz.thumbnail
-      };
-
-      request( endpoint )
-            .post('/1.0/quizzes')
-            .set('Content-Type', 'application/json')
-            .send( JSON.stringify( quiz ) )
-            .expect(201)
-            .expect( "Content-Type", /json/ )
-            .expect(function( res ){
-              expect( res.body ).to.have.all.keys( 'id', 'title', 'desc', 'thumbnail', 'questions');
-              expect( res.body.title ).to.deep.equal( quiz.title );
-              expect( res.body.desc ).to.equal( quiz.desc );
-              expect( res.body.thumbnail ).to.equal( quiz.thumbnail );
-              expect( res.body.questions )
-                .to.be.an( 'array' )
-                .and.to.be.empty;
-            })
-            .end( (err, res) => {
-              if (err) return done(err);
-              done();
-            });
-    });
-
-
-
-    it( "Post new quiz entity, pass title as locale object, desc as locale object and thumbnail", function(done){
-      var quiz = {
-        title: this.testQuiz.title,
-        desc: this.testQuiz.desc,
-        thumbnail: this.testQuiz.thumbnail
-      };
-
-      request( endpoint )
-            .post('/1.0/quizzes')
-            .set('Content-Type', 'application/json')
-            .send( JSON.stringify( quiz ) )
-            .expect(201)
-            .expect( "Content-Type", /json/ )
-            .expect(function( res ){
-              expect( res.body ).to.have.all.keys( 'id', 'title', 'desc', 'thumbnail', 'questions');
-              expect( res.body.title ).to.deep.equal( quiz.title );
-              expect( res.body.desc ).to.deep.equal( quiz.desc );
-              expect( res.body.thumbnail ).to.equal( quiz.thumbnail );
-              expect( res.body.questions )
-                .to.be.an( 'array' )
-                .and.to.be.empty;
-            })
-            .end( (err, res) => {
-              if (err) return done(err);
-              done();
-            });
-    });
-
-
-    
-    it( "Post new quiz entity without params and recieve validation error", function(done){
-      request( endpoint )
-            .post('/1.0/quizzes')
-            .set('Content-Type', 'application/json')
-            .send()
-            .expect(422)
-            .expect( "Content-Type", /json/ )
-            .expect(function( res ){
-              expect( res.body ).to.have.all.keys( 'error', 'message' );
             })
             .end( (err, res) => {
               if (err) return done(err);
@@ -220,6 +185,146 @@ describe( "Quizzes CRUD operation", function(){
 
 
 
+    it( "Post new quiz entity, pass title as locale object, desc as string and thumbnail", function(done){
+      var quiz = {
+        title: this.testQuiz.title,
+        desc: this.testQuiz.desc.en,
+        thumbnail: this.testQuiz.thumbnail
+      };
+
+      request( endpoint )
+            .post('/1.0/quizzes')
+            .set('Content-Type', 'application/json')
+            .send( JSON.stringify( quiz ) )
+            .expect(201)
+            .expect( "Content-Type", /json/ )
+            .expect(function( res ){
+              expect( res.body ).to.have.all.keys( 'id', 'title', 'desc', 'thumbnail', 'questions');
+              expect( res.body.title ).to.deep.equal( quiz.title.en );
+              expect( res.body.desc ).to.equal( quiz.desc );
+              expect( res.body.thumbnail ).to.equal( quiz.thumbnail );
+              expect( res.body.questions )
+                .to.be.an( 'array' )
+                .and.to.be.empty;
+            })
+            .end( (err, res) => {
+              if (err) return done(err);
+              done();
+            });
+    });
+
+
+
+    it( "Post new quiz entity, pass title as locale object, desc as locale object and thumbnail", function(done){
+      var quiz = {
+        title: this.testQuiz.title,
+        desc: this.testQuiz.desc,
+        thumbnail: this.testQuiz.thumbnail
+      };
+
+      request( endpoint )
+            .post('/1.0/quizzes')
+            .set('Content-Type', 'application/json')
+            .send( JSON.stringify( quiz ) )
+            .expect(201)
+            .expect( "Content-Type", /json/ )
+            .expect(function( res ){
+              expect( res.body ).to.have.all.keys( 'id', 'title', 'desc', 'thumbnail', 'questions');
+              expect( res.body.title ).to.deep.equal( quiz.title.en );
+              expect( res.body.desc ).to.deep.equal( quiz.desc.en );
+              expect( res.body.thumbnail ).to.equal( quiz.thumbnail );
+              expect( res.body.questions )
+                .to.be.an( 'array' )
+                .and.to.be.empty;
+            })
+            .end( (err, res) => {
+              if (err) return done(err);
+              this.createdQuizId = res.body.id;
+              done();
+            });
+    });
+
+
+    
+    it( "Post new quiz entity without params and recieve validation error", function(done){
+      request( endpoint )
+            .post('/1.0/quizzes')
+            .set('Content-Type', 'application/json')
+            .send()
+            .expect(422)
+            .expect( "Content-Type", /json/ )
+            .expect(function( res ){
+              expect( res.body ).to.have.all.keys( 'error', 'message' );
+            })
+            .end( (err, res) => {
+              if (err) return done(err);
+              done();
+            });
+    });
+
+
+
+    /*************** POST Quiz question entity ***************/
+    it( "Post new quiz question entity, pass all options as string", function(done){
+      var question = this.testQuiz.questions[0];
+
+      request( endpoint )
+            .post(`/1.0/quizzes/${this.createdQuizId}/questions`)
+            .set('Content-Type', 'application/json')
+            .send( JSON.stringify( question ) )
+            .expect(201)
+            .expect( "Content-Type", /json/ )
+            .expect(function( res ){
+              expect( res.body ).to.have.all.keys( 'id', 'target', 'level', 'desc', 'options');
+              expect( res.body.level ).to.equal(1);
+              expect( res.body.desc ).to.be.empty;
+              expect( res.body.options ).to.be.an( 'array' );
+              expect( res.body.options.length ).to.equal( question.options.length );
+
+              res.body.options.forEach( item => {
+                expect( item ).to.have.all.keys( 'id', 'value' );
+                expect( question.options.indexOf( item.value ) ).to.not.equal(-1);
+              });
+            })
+            .end( err => {
+              if (err) return done(err);
+              done();
+            });
+    });
+
+
+
+    it( "Post new quiz question entity, pass all options as locale objects and desc as string", function(done){
+      var question = this.testQuiz.questions[1];
+      var options  = question.options.map( item => item.en );
+
+      request( endpoint )
+            .post(`/1.0/quizzes/${this.createdQuizId}/questions`)
+            .set('Content-Type', 'application/json')
+            .send( JSON.stringify( question ) )
+            .expect(201)
+            .expect( "Content-Type", /json/ )
+            .expect(function( res ){
+              expect( res.body ).to.have.all.keys( 'id', 'target', 'level', 'desc', 'options' );
+              expect( res.body.level ).to.equal( question.level );
+              expect( res.body.desc ).to.equal( question.desc.en );
+              expect( res.body.options ).to.be.an( 'array' );
+              expect( res.body.options.length ).to.equal( question.options.length );
+
+              res.body.options.forEach( item => {
+                expect( item ).to.have.all.keys( 'id', 'value' );
+                expect( options.indexOf( item.value ) ).to.not.equal(-1);
+              });
+            })
+            .end( (err, res) => {
+              if (err) return done(err);
+              done();
+            });
+    });
+
+
+
+    /*************** Delete Quiz entity ***************/
     it( "Delete existing quiz entity", function(done){
       request( endpoint )
             .del('/1.0/quizzes/' + this.createdQuizId )
@@ -233,6 +338,19 @@ describe( "Quizzes CRUD operation", function(){
 
 
     it( "Try to delete non-existand quiz entity and receive 404", function(done){
+      request( endpoint )
+            .del('/1.0/quizzes/' + this.createdQuizId )
+            .expect(404)
+            .end( (err, res) => {
+              if (err) return done(err);
+              this.createdQuizId = null;
+              done();
+            });
+    });
+
+
+    
+    it( "Add question to quiz entity", function(done){
       request( endpoint )
             .del('/1.0/quizzes/' + this.createdQuizId )
             .expect(404)

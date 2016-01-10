@@ -9,13 +9,13 @@ module.exports = {
 		var message;
 
 		if ( Array.isArray( error ) ){
-			message = error.map( item => item.message );
+			message = error.map( item => item.dataPath ? ( item.dataPath + " - " + item.message ) : item.message );
 
 			if ( message.length === 1 ){
 				message = message[0];
 			}
 		}else{
-			message = error.message
+			message = error.dataPath + " - " + error.message
 		}
 
 		return {

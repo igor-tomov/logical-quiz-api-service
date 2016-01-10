@@ -18,7 +18,7 @@ var QuestionOptionSchema = new Schema({
 
 
 QuestionOptionSchema.methods.toClient = function( locale ){
-  var object = utils.normalizeId( this.toObject() );
+  var object = utils.normalizeId( this.toObject({ versionKey: false }) );
 
   if ( locale ){
     object = utils.localizeField( object, 'value', locale );
@@ -34,16 +34,19 @@ QuestionOptionSchema.methods.toClient = function( locale ){
 var QuestionSchema = new Schema({
 
   target: {
-    type: Number,
+    type: String,
     required: true
   },
 
   level: {
     type: Number,
-    default: 0
+    default: 1
   },
 
-  desc: String,
+  desc: {
+    type: Schema.Types.Mixed,
+    default: ''
+  },
 
   options: {
     type: [QuestionOptionSchema],
@@ -52,9 +55,13 @@ var QuestionSchema = new Schema({
 });
 
 QuestionSchema.methods.toClient = function( locale, shuffle ){
-  var question = utils.normalizeId( this.toObject() );
+  var question = utils.normalizeId( this.toObject({ versionKey: false }) );
 
   question.options = this.options.map( item => item.toClient( locale ) );
+
+  if ( question.desc && locale ){
+    question = utils.localizeField( question, 'desc', locale );
+  }
 
   if ( shuffle ){
     question.options = utils.shuffleList( question.options );
@@ -93,14 +100,18 @@ var QuizSchema = new Schema({
 
 
 
-QuizSchema.methods.toClient = function( locale ){
+QuizSchema.methods.toClient = function( locale, shuffleQuestions ){
   var object = utils.normalizeId( this.toObject({ versionKey: false }) );
 
   if ( locale ){
     object = utils.localizeField( object, 'title', locale );
+
+    if ( object.desc ){
+      object = utils.localizeField( object, 'desc', locale );
+    }
   }
 
-  object.questions = this.questions.map( item => item.toClient( locale, true /* todo: make it configurable */ ) );
+  object.questions = this.questions.map( item => item.toClient( locale, shuffleQuestions ) );
   
   return object;
 };
