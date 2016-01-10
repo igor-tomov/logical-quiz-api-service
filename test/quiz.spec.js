@@ -390,7 +390,30 @@ describe( "Quizzes CRUD operation", function(){
     });
 
 
+return;
     /*************** Delete Quiz question entity ***************/
+    it( "Delete existing question entity", function(done){
+      request( endpoint )
+            .del( `/1.0/quizzes/${this.createdQuizId}/questions/${this.createdQuizQuestionId}` )
+            .expect(204)
+            .end( (err, res) => {
+              if (err) return done(err);
+              done();
+            });
+    });
+
+
+
+    it( "Try to delete non-existand question entity and receive 404", function(done){
+      request( endpoint )
+            .del( `/1.0/quizzes/${this.createdQuizId}/questions/${this.createdQuizQuestionId}` )
+            .expect(404)
+            .end( (err, res) => {
+              if (err) return done(err);
+              this.createdQuizQuestionId = null;
+              done();
+            });
+    });
 
 
 
@@ -408,19 +431,6 @@ describe( "Quizzes CRUD operation", function(){
 
 
     it( "Try to delete non-existand quiz entity and receive 404", function(done){
-      request( endpoint )
-            .del('/1.0/quizzes/' + this.createdQuizId )
-            .expect(404)
-            .end( (err, res) => {
-              if (err) return done(err);
-              this.createdQuizId = null;
-              done();
-            });
-    });
-
-
-    
-    it( "Add question to quiz entity", function(done){
       request( endpoint )
             .del('/1.0/quizzes/' + this.createdQuizId )
             .expect(404)

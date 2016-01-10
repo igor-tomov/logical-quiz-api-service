@@ -185,7 +185,10 @@ module.exports = function( router, config ){
 
 
   router.delete( '/1.0/quizzes/:quiz_id/questions/:question_id', ( req, res ) => {
-    //todo: implement
+    Question.findByIdAndRemove( req.params.question_id, ( err, quiz ) => {
+      if (err) throw err;
+      res.status(quiz ? 204 : 404).end();
+    })
   });
 
 };
