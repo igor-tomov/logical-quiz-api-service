@@ -344,8 +344,30 @@ describe( "Quizzes CRUD operation", function(){
     });
 
 
+    it( "Post new question entity without one required param and recieve validation error", function(done){
+      var question = Object.assign( {}, this.testQuiz.questions[1] );
 
-    it( "Post new question entity without required params and recieve validation error", function(done){
+      delete question.target;
+
+      request( endpoint )
+            .post(`/1.0/quizzes/${this.createdQuizId}/questions`)
+            .set('Content-Type', 'application/json')
+            .send( JSON.stringify( question ) )
+            .expect(422)
+            .expect( "Content-Type", /json/ )
+            .expect(function( res ){
+              expect( res.body ).to.have.all.keys( 'error', 'message' );
+              expect( res.body.message ).to.be.an( 'string' );
+            })
+            .end( (err, res) => {
+              if (err) return done(err);
+              done();
+            });
+    });
+
+
+
+    it( "Post new question entity without few required params and recieve validation error", function(done){
       var question = Object.assign( {}, this.testQuiz.questions[1] );
 
       delete question.target;
@@ -366,6 +388,9 @@ describe( "Quizzes CRUD operation", function(){
               done();
             });
     });
+
+
+    /*************** Delete Quiz question entity ***************/
 
 
 
