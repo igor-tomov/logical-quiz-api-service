@@ -162,16 +162,34 @@ module.exports = function( router, config ){
       return;
     }
 
-    options = body.options.map( item => new QuestionOption({ value: item }) );
-    
-    question = new Question( Object.assign( {}, body, {
-      options: options,
-      target: options[body.target - 1].id
-    }));
-
-    question.save( err => {
+    // find target quiz entity
+    Quiz.findById( req.params.id, 'questions', ( err, quiz ) => {
       if ( err ) throw err;
-      res.status( 201 ).json( question.toClient( req.locale ) );
+
+      if ( ! quiz ){
+        res.status(400).json({
+          error: `Quiz entity '${req.params.id}' isn't found`
+        });
+
+        return;
+      }
+
+      // build option models for new question
+      options = body.options.map( item => new QuestionOption({ value: item }) );
+
+      // create new question and add to quiz
+      question = new Question( Object.assign( {}, body, {
+        options: options,
+        target: options[body.target - 1].id
+      }));
+
+      quiz.questions.push( question );
+
+      // save updated quiz
+      quiz.save( err => {
+        if ( err ) throw err;
+        res.status( 201 ).json( question.toClient( req.locale ) );
+      });
     });
   });
 
@@ -185,10 +203,39 @@ module.exports = function( router, config ){
 
 
   router.delete( '/1.0/quizzes/:quiz_id/questions/:question_id', ( req, res ) => {
-    Question.findByIdAndRemove( req.params.question_id, ( err, quiz ) => {
-      if (err) throw err;
-      res.status(quiz ? 204 : 404).end();
-    })
+    var quizId = req.params.quiz_id,
+        questionId = req.params.question_id;
+
+    Quiz.findById( quizId, 'questions', ( err, quiz ) => {
+      var question;
+
+      if ( err ) throw err;
+
+      if ( ! quiz ){
+        res.status(400).json({
+          error: `Quiz entity '${quizId}' isn't found`
+        });
+
+        return;
+      }
+
+      // find target question
+      question = quiz.questions.id( questionId );
+
+      if ( ! question ){
+        res.status(404).end();
+        return;
+      }
+
+      // remove question
+      question.remove();
+
+      // save updated quiz
+      quiz.save( err => {
+        if ( err ) throw err;
+        res.status( 204 ).end();
+      });
+    });
   });
 
 };

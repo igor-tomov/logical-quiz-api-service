@@ -390,7 +390,7 @@ describe( "Quizzes CRUD operation", function(){
     });
 
 
-return;
+
     /*************** Delete Quiz question entity ***************/
     it( "Delete existing question entity", function(done){
       request( endpoint )
