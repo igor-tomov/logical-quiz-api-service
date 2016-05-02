@@ -1,11 +1,11 @@
 module.exports = {
 	/**
-	 * Prepare error HTTP respose from supplied tv4.js error payload
+	 * Prepare error HTTP response from supplied tv4.js error payload
 	 *
 	 * @param {Object} error - error payload
 	 * @return {Object}
 	 */
-	prepareErrorResponse( error ){
+	prepareValidationErrorResponse( error ){
 		var message;
 
 		if ( Array.isArray( error ) ){

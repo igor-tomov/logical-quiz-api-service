@@ -123,7 +123,7 @@ module.exports = function( router, config ){
 
     if ( ! result.valid ){
       logger.debug( result.errors );
-      res.status( 422 ).json( utils.prepareErrorResponse( result.errors ) );
+      res.status( 422 ).json( utils.prepareValidationErrorResponse( result.errors ) );
       return;
     }
 
@@ -158,7 +158,16 @@ module.exports = function( router, config ){
 
     if ( ! result.valid ){
       logger.debug( result.errors );
-      res.status( 422 ).json( utils.prepareErrorResponse( result.errors ) );
+      res.status( 422 ).json( utils.prepareValidationErrorResponse( result.errors ) );
+      return;
+    }
+    
+    if ( body.target > body.options.length ){
+      res.status( 422 ).json( utils.prepareValidationErrorResponse({
+        dataPath: "/target",
+        message: '"target" value is out of "options" index range'
+      }));
+      
       return;
     }
 
