@@ -2,5 +2,6 @@
  * Common application config
  */
 module.exports = {
-  defaultLocale: 'en'
+  "locale.default": "en",
+  "random.questions.count.default": 10
 };
