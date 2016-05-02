@@ -111,7 +111,9 @@ QuizSchema.methods.toClient = function( locale, shuffleQuestions ){
     }
   }
 
-  object.questions = this.questions.map( item => item.toClient( locale, shuffleQuestions ) );
+  if ( this.questions ) {
+    object.questions = this.questions.map(item => item.toClient(locale, shuffleQuestions));
+  }
   
   return object;
 };
