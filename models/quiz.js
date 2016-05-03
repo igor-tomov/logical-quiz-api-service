@@ -54,6 +54,8 @@ var QuestionSchema = new Schema({
   }
 });
 
+
+
 QuestionSchema.methods.toClient = function( locale, shuffle ){
   var question = utils.normalizeId( this.toObject({ versionKey: false }) );
 
@@ -100,18 +102,32 @@ var QuizSchema = new Schema({
 
 
 
+QuizSchema.methods.shuffleQuestions = function () {
+  this.questions = utils.shuffleList( this.questions );
+  return this;
+};
+
+
+
+QuizSchema.methods.sliceQuestions = function ( begin, end ) {
+  this.questions = this.questions.slice( begin, end );
+  return this;
+};
+
+
+
 QuizSchema.methods.toClient = function( locale, shuffleQuestions ){
   var object = utils.normalizeId( this.toObject({ versionKey: false }) );
 
-  if ( locale ){
+  if ( locale && object.title ){
     object = utils.localizeField( object, 'title', locale );
 
-    if ( object.desc ){
+    if ( object.desc && object.desc ){
       object = utils.localizeField( object, 'desc', locale );
     }
   }
 
-  if ( this.questions ) {
+  if ( Array.isArray( this.questions ) ) {
     object.questions = this.questions.map(item => item.toClient(locale, shuffleQuestions));
   }
   

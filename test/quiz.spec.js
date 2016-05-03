@@ -159,7 +159,7 @@ describe( "Quizzes CRUD operation", function(){
 
 
 
-    it( "Post new quiz entity, pass title with invalid locale object and recieve validation error", function(done){
+    it( "Post new quiz entity, pass title with invalid locale object and receive validation error", function(done){
       var quiz = {
         title: {
           en: 'En locale',

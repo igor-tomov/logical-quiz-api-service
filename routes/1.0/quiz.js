@@ -98,10 +98,46 @@ var quizQuestionSchema = {
 
 module.exports = function( router, config ){
 
-  router.get( '/1.0/quizzes/', ( req, res ) => {
-    res.end('OK');
+  router.get( '/1.0/quizzes/', ( req, res, next ) => {
+    Quiz.find().select( "title desc" ).exec()
+        .then( data => res.json( data.map( item => item.toClient( req.locale ) ) ) )
+        .then( null, err => next( err ) ) ;// .catch() isn't supported by Mongoose Promise yet
   });
 
+
+
+  router.get( '/1.0/quizzes/:id/questions/random', ( req, res ) => {
+    var questionsCount = req.query.count || config["random.questions.count.default"];
+
+    Quiz.findById( req.params.id, { questions: 1 }, ( err, quiz ) => {
+      if ( ! quiz ){
+        res.sendStatus(404);
+        return;
+      }
+
+      res.json(
+          // todo: basic implementation of random question selection, should be improved
+          quiz.shuffleQuestions()
+              .sliceQuestions( 0, questionsCount )
+              .toClient( req.locale, true )
+      );
+    })
+  });
+
+  
+
+  router.get( '/1.0/quizzes/:id', ( req, res ) => {
+    Quiz.findById( req.params.id, ( err, quiz ) => {
+      //if ( err ) throw err;
+
+      if ( ! quiz ){
+        res.sendStatus(404);
+        return;
+      }
+
+      res.json( quiz.toClient( req.locale ) );
+    })
+  });
 
 
 
@@ -167,7 +203,7 @@ module.exports = function( router, config ){
         dataPath: "/target",
         message: '"target" value is out of "options" index range'
       }));
-      
+
       return;
     }
 
@@ -218,10 +254,10 @@ module.exports = function( router, config ){
     Quiz.findById( quizId, 'questions', ( err, quiz ) => {
       var question;
 
-      if ( err ) throw err;
+      //if ( err ) throw err;
 
       if ( ! quiz ){
-        res.status(400).json({
+        res.status(404).json({
           error: `Quiz entity '${quizId}' isn't found`
         });
 
