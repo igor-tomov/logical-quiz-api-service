@@ -99,8 +99,10 @@ var quizQuestionSchema = {
 module.exports = function( router, config ){
 
   router.get( '/1.0/quizzes/', ( req, res, next ) => {
-    Quiz.find().select( "title desc" ).exec()
-        .then( data => res.json( data.map( item => item.toClient( req.locale ) ) ) )
+    Quiz.find().select( "title desc thumbnail" ).exec()
+        .then( quizzes => res.json({
+          quizzes: quizzes.map( item => item.toClient( req.locale ) )
+        }))
         .then( null, err => next( err ) ) ;// .catch() isn't supported by Mongoose Promise yet
   });
 
@@ -135,7 +137,9 @@ module.exports = function( router, config ){
         return;
       }
 
-      res.json( quiz.toClient( req.locale ) );
+      res.json({
+        quiz: quiz.toClient( req.locale )
+      });
     })
   });
 

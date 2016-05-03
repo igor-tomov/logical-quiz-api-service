@@ -13,7 +13,7 @@ var endpoint = process.env.TEST_SERVER || process.argv.reduce( ( res, item, i ) 
   }
 
   return res;
-}, 'http://localhost:8080');
+}, 'http://localhost:8081');
 
 
 
@@ -247,7 +247,7 @@ describe( "Quizzes CRUD operation", function(){
 
 
     
-    it( "Post new quiz entity without params and recieve validation error", function(done){
+    it( "Post new quiz entity without params and receive validation error", function(done){
       request( endpoint )
             .post('/1.0/quizzes')
             .set('Content-Type', 'application/json')
@@ -386,6 +386,55 @@ describe( "Quizzes CRUD operation", function(){
             .end( (err, res) => {
               if (err) return done(err);
               done();
+            });
+    });
+
+
+
+    /*************** GET Quiz list ***************/
+    it( "GET /1.0/quizzes", function ( done ) {
+        request( endpoint )
+            .get( "/1.0/quizzes" )
+            .expect(200)
+            .expect(function ( res ) {
+                expect( res.body.quizzes ).to.be.an( 'array' );
+                expect( res.body.quizzes.length ).to.equal( 4 );
+                expect( res.body.quizzes[0] ).to.have.all.keys( 'id', 'title', 'desc', 'thumbnail' );
+            })
+            .end( (err, res) => {
+                if (err) return done(err);
+                done();
+            });
+
+    });
+
+
+    it( "GET /1.0/quizzes/:id", function ( done ) {
+        request( endpoint )
+            .get( "/1.0/quizzes/" + this.createdQuizId )
+            .expect(200)
+            .expect(function ( res ) {
+                expect( res.body.quiz ).to.have.all.keys( 'id', 'title', 'desc', 'thumbnail', 'questions' );
+            })
+            .end( (err, res) => {
+                if (err) return done(err);
+                done();
+            });
+    });
+
+
+
+    /*************** GET Quiz questions ***************/
+    it( "GET /1.0/quizzes/:id/questions/random - get random question list of particular quiz", function ( done ) {
+        request( endpoint )
+            .get( `/1.0/quizzes/${this.createdQuizId}/questions/random` )
+            .expect(200)
+            .expect(function ( res ) {
+                expect( res.body.questions ).to.be.an( 'array' );
+            })
+            .end( (err, res) => {
+                if (err) return done(err);
+                done();
             });
     });
 
