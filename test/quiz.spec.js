@@ -440,6 +440,22 @@ describe( "Quizzes CRUD operation", function(){
 
 
 
+    it( "GET /1.0/quizzes/:id/questions/random - get random question list of particular quiz with request count", function ( done ) {
+        request( endpoint )
+            .get( `/1.0/quizzes/${this.createdQuizId}/questions/random?count=1` )
+            .expect(200)
+            .expect(function ( res ) {
+                expect( res.body.questions ).to.be.an( 'array' );
+                expect( res.body.questions.length ).to.equal( 1 );
+            })
+            .end( (err, res) => {
+                if (err) return done(err);
+                done();
+            });
+    });
+
+
+
     /*************** Delete Quiz question entity ***************/
     it( "Delete existing question entity", function(done){
       request( endpoint )
