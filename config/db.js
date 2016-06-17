@@ -6,6 +6,10 @@ var config = {
   },
   test: {
     endpoint: 'mongodb://localhost/logical-quiz-test'
+  },
+
+  production: {
+    endpoint: process.env.MONGODB_URI || 'mongodb://localhost/logical-quiz'
   }
   // todo: config for rest environments
 };
